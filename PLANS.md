@@ -78,3 +78,27 @@ Tracks progress across all implementation phases.
 - [x] Accessibility pass (skip-nav, aria-labels, aria-live, reduced-motion)
 - [x] Final documentation (README, game-design, responsive-strategy)
 - [x] Tag v0.1.0
+
+## Phase 7.1 — Dev Console Cleanup
+**Status: ✅ Complete**
+
+- [x] Fix WebSocket HMR cross-origin block (`allowedDevOrigins` in next.config.ts)
+- [x] Fix nested `<a>` hydration error (PillLink → styled span in game cards)
+- [x] Fix Image aspect-ratio warning (`h-auto w-auto` on logo images)
+- [x] Fix `scroll-behavior` warning (`data-scroll-behavior` attribute on html)
+- [x] Fix Three.js `PCFSoftShadowMap` deprecation (`shadows="basic"` on Canvas)
+- [x] Add VS Code dev server task (`.vscode/tasks.json`)
+
+## Phase 8 — Lane Play Visual Overhaul
+**Status: 🔄 In Progress**
+
+- [ ] Suppress THREE.Clock deprecation warning (R3F internal, monkey-patch)
+- [ ] Neon bowling alley environment (walls, ceiling, neon strip lights)
+- [ ] Post-processing bloom for neon glow effects
+- [ ] Upgraded lane: glossy wood, neon lane arrows, glowing foul line
+- [ ] Upgraded pins: lathe geometry, glossy material, better proportions
+- [ ] Upgraded ball: glossy reflective material, marble swirl effect
+- [ ] Dramatic neon lighting (red/cyan/blue matching Rowans brand aesthetic)
+- [ ] Camera follow during ball roll
+- [ ] Strike/spare visual effects (screen flash, particle burst)
+- [ ] Atmospheric fog and vignette

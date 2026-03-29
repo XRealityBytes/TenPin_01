@@ -49,7 +49,7 @@ function SiteHeader() {
           alt="Rowans Tenpin Bowl"
           width={36}
           height={36}
-          className="object-contain"
+          className="h-auto w-auto object-contain"
           priority
         />
         <span className="hidden text-sm font-bold uppercase tracking-widest text-foreground sm:inline">

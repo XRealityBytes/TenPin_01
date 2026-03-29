@@ -34,7 +34,7 @@
 
 /* ── Base HTML ─────────────────────────────────────────── */
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior handled via data-scroll-behavior attr on <html> — see layout.tsx */
 }
 
 body {

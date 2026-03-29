@@ -13,7 +13,7 @@ import Link from "next/link";
 
 import { Container } from "@/components/Container";
 import { ContinueBanner } from "@/components/ContinueBanner";
-import { PillLink } from "@/components/PillLink";
+import { cn } from "@/lib/cn";
 
 const games = [
   {
@@ -79,7 +79,7 @@ export default function HomePage() {
             width={80}
             height={80}
             priority
-            className="drop-shadow-lg"
+            className="h-auto w-auto drop-shadow-lg"
           />
           <h1 className="text-[clamp(2rem,6vw,4.5rem)] font-bold leading-[0.95] tracking-tight">
             <span className="accent-glow">TenPin</span>
@@ -118,9 +118,19 @@ export default function HomePage() {
                   <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
                     {game.description}
                   </p>
-                  <PillLink href={game.href} tone={game.tone}>
+                  <span
+                    className={cn(
+                      "inline-flex min-h-11 items-center justify-center rounded-full border px-5 py-2.5 text-[0.78rem] font-medium uppercase tracking-[0.22em] transition-[transform,background-color,border-color,color,box-shadow] duration-(--duration-base) ease-(--ease-standard) group-hover:-translate-y-0.5",
+                      game.tone === "light" &&
+                        "border-border-strong bg-white text-black shadow-[0_12px_28px_rgba(255,255,255,0.12)] group-hover:border-white group-hover:bg-white/92",
+                      game.tone === "accent" &&
+                        "border-accent bg-accent text-white shadow-[0_12px_32px_rgba(255,0,0,0.24)] group-hover:border-white group-hover:bg-red-600",
+                      game.tone === "ghost" &&
+                        "border-border bg-white/5 text-white group-hover:border-white/40 group-hover:bg-white/10",
+                    )}
+                  >
                     Play
-                  </PillLink>
+                  </span>
                 </div>
               </Link>
             ))}

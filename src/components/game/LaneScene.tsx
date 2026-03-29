@@ -252,7 +252,7 @@ export function LanePlayGame() {
   return (
     <div ref={canvasRef} className="relative h-full w-full" style={{ touchAction: "none" }}>
       <Canvas
-        shadows
+        shadows="basic"
         dpr={[1, 2]}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
       >
