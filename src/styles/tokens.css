@@ -1,0 +1,109 @@
+/**
+ * Design tokens for TenPin_01.
+ *
+ * Inherited from Rowans Bowling (Rowans_Bowling_GC_01) and extended with
+ * game-specific variables. Every colour, spacing, radius, shadow, and timing
+ * value used in the UI should reference a token defined here — never use a
+ * raw hex or px value in component code.
+ */
+
+:root {
+  /* ── Base palette ─────────────────────────────────────── */
+  --color-base-black: #000000;
+  --color-base-white: #ffffff;
+  --color-base-red: #ff0000;
+  --color-base-charcoal: #17181a;
+  --color-base-gray: #535353;
+
+  /* ── Semantic surfaces ────────────────────────────────── */
+  --color-surface-page: var(--color-base-black);
+  --color-surface-panel: rgba(23, 24, 26, 0.92);
+  --color-surface-elevated: var(--color-base-charcoal);
+  --color-surface-soft: rgba(255, 255, 255, 0.04);
+
+  /* ── Text ──────────────────────────────────────────────── */
+  --color-text-primary: var(--color-base-white);
+  --color-text-secondary: rgba(255, 255, 255, 0.78);
+  --color-text-muted: rgba(255, 255, 255, 0.58);
+
+  /* ── Borders ───────────────────────────────────────────── */
+  --color-border-subtle: rgba(255, 255, 255, 0.14);
+  --color-border-strong: rgba(255, 255, 255, 0.28);
+
+  /* ── Brand ─────────────────────────────────────────────── */
+  --color-brand-accent: var(--color-base-red);
+
+  /* ── Gradients ─────────────────────────────────────────── */
+  --gradient-hero:
+    radial-gradient(circle at top center, rgba(255, 0, 0, 0.34), transparent 42%),
+    linear-gradient(180deg, rgba(23, 24, 26, 0.94) 0%, rgba(0, 0, 0, 1) 62%);
+  --gradient-panel: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+
+  /* ── Shadows ───────────────────────────────────────────── */
+  --shadow-media: 0 4px 4px rgba(0, 0, 0, 0.25);
+  --shadow-panel: 0 24px 64px rgba(0, 0, 0, 0.45);
+
+  /* ── Radii ─────────────────────────────────────────────── */
+  --radius-card: 1rem;
+  --radius-panel: 1.5rem;
+  --radius-pill: 999px;
+
+  /* ── Layout widths ─────────────────────────────────────── */
+  --page-max-width: 120rem;
+  --content-max-width: 88rem;
+  --content-narrow-width: 64rem;
+
+  /* ── Spacing (fluid) ───────────────────────────────────── */
+  --space-gutter: clamp(1.25rem, 3vw, 3rem);
+  --space-section-sm: clamp(4rem, 7vw, 5.5rem);
+  --space-section-md: clamp(5rem, 9vw, 7rem);
+  --space-section-lg: clamp(6rem, 12vw, 9rem);
+
+  /* ── Timing & easing ───────────────────────────────────── */
+  --duration-fast: 160ms;
+  --duration-base: 240ms;
+  --duration-slow: 360ms;
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* ── Glow effect (Rowans neon accent) ──────────────────── */
+  --accent-text-shadow-glow:
+    0 0 0.02em rgba(255, 255, 255, 0.92),
+    0 0 0.08em color-mix(in srgb, var(--color-brand-accent) 78%, white 22%),
+    0 0 0.2em rgba(255, 0, 0, 0.78),
+    0 0 0.42em rgba(255, 0, 0, 0.58),
+    0 0 0.8em rgba(255, 0, 0, 0.28);
+
+  /* ── Safe-area fallbacks (overridden by JS on notched devices) */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+
+  /* ── Game-specific tokens ──────────────────────────────── */
+  --color-lane-wood: #c4943a;
+  --color-lane-wood-light: #dbb76a;
+  --color-pin-white: #f5f0e8;
+  --color-pin-stripe: #cc0000;
+  --color-ball-surface: #1a1a2e;
+  --color-gutter-dark: #0d0d0d;
+  --color-score-active: var(--color-brand-accent);
+  --color-score-strike: #ffd700;
+  --game-canvas-bg: var(--color-base-charcoal);
+
+  /* ── Game HUD sizing ───────────────────────────────────── */
+  --hud-font-size: clamp(0.75rem, 2vw, 1rem);
+  --hud-padding: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+/* Logical viewport height — better than 100vh on iOS Safari */
+@supports (height: 100lvh) {
+  :root {
+    --full-viewport-height: 100lvh;
+  }
+}
+
+@supports not (height: 100lvh) {
+  :root {
+    --full-viewport-height: 100vh;
+  }
+}

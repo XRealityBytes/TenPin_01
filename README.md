@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TenPin_01 — Rowans Bowling Online Game + Scorecard
 
-## Getting Started
+Three bowling-themed web games and a digital scorecard, built with **Next.js 16**, **React 19**, **TypeScript**, and **Tailwind CSS v4**. Uses the Rowans Bowling dark-theme design system for visual consistency.
 
-First, run the development server:
+## Games
+
+| Game | Type | Description |
+|------|------|-------------|
+| **Lane Play** | 3D (Three.js) | First-person bowling — aim, power, spin, 10-frame match with physics |
+| **Pin Picker** | 2D (Canvas) | Top-down puzzle — clear pin formations in the fewest shots |
+| **Score Challenge** | DOM quiz | Quick-fire rounds — calculate bowling scores against the clock |
+| **Scorecard** | DOM tool | Digital scorecard for real-world matches (1–6 players) |
+
+## Quick Start
 
 ```bash
+# Install dependencies
+npm install
+
+# Start dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run lint` | Run ESLint |
+| `npm run typecheck` | TypeScript type check |
+| `npm run format` | Check Prettier formatting |
+| `npm run format:write` | Auto-fix formatting |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+src/
+  app/               Route-level files and shared layout
+    lane-play/       Game 1 — 3D bowling
+    pin-picker/      Game 2 — 2D puzzle
+    score-challenge/ Game 3 — scoring quiz
+    scorecard/       Digital scorecard
+  components/
+    game/            Three.js scenes, Canvas games, HUD
+    scorecard/       Scorecard UI components
+    site/            Shell, header, nav, footer
+    ui/              Shared UI primitives
+  hooks/             Game loop, controls, responsive canvas, audio
+  lib/               Scoring engine, physics config, asset loader, utilities
+  styles/            Design tokens (inherited from Rowans site)
+  types/             TypeScript type definitions
+  content/           Game content data (levels, etc.)
+scripts/             Asset generation pipeline (OpenAI + Meshy + ElevenLabs)
+public/assets/
+  brand/             Rowans branding (hero, logo)
+  generated/         AI-generated textures, 3D models, audio (git-ignored)
+docs/                Architecture, game design, responsive strategy docs
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Next.js 16** App Router with React 19
+- **Tailwind CSS v4** with CSS-first configuration
+- **Three.js** via `@react-three/fiber` + `@react-three/drei` (Game 1)
+- **cannon-es** for physics (Game 1)
+- **Canvas 2D** API (Game 2)
+- **DOM + CSS** animations (Game 3 + Scorecard)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Design System
 
-## Deploy on Vercel
+Inherits the Rowans Bowling dark theme: black surfaces, red brand accent, white text, neon glow effects, fluid spacing via `clamp()`, and safe-area support for notched mobile devices.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Asset Pipeline
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Textures, 3D models, and audio are generated via API scripts (OpenAI, Meshy, ElevenLabs). See `docs/asset-pipeline.md` for details. Generated files are git-ignored — run `npm run generate-assets` to produce them locally.
+
+## Responsive Strategy
+
+Mobile-first with fluid scaling (`clamp()`, `min()`, `max()`), `env(safe-area-inset-*)` for notched devices, orientation-aware canvas resizing, and a fixed bottom tab bar on mobile. See `docs/responsive-strategy.md`.
+
+## Git Workflow
+
+- `main` — production releases
+- `develop` — integration branch
+- Feature branches: `feat/lane-play`, `feat/scorecard`, etc.
+- Conventional commits: `feat(scope): description`
+
+Remote: `github.com/xrealitybytes/TenPin_01`
