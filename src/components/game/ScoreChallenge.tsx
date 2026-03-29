@@ -150,7 +150,7 @@ export function ScoreChallenge() {
   if (state.phase === "MENU") {
     return (
       <Container className="flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
-        <span className="text-6xl">🧠</span>
+        <span className="text-6xl" aria-hidden="true">🧠</span>
         <h1 className="text-3xl font-bold uppercase tracking-wider">Score Challenge</h1>
         <p className="max-w-md text-sm text-[var(--color-text-muted)]">
           Test your bowling scoring knowledge! 10 questions with increasing
@@ -171,7 +171,7 @@ export function ScoreChallenge() {
     const percentage = Math.round((state.correctCount / state.questions.length) * 100);
     return (
       <Container className="flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
-        <span className="text-5xl">🏆</span>
+        <span className="text-5xl" aria-hidden="true">🏆</span>
         <h2 className="text-2xl font-bold uppercase tracking-wider">Quiz Complete!</h2>
         <div className="flex flex-col gap-2">
           <p className="text-4xl font-black tabular-nums text-[var(--color-brand-accent)]">
@@ -227,7 +227,14 @@ export function ScoreChallenge() {
       </div>
 
       {/* Timer bar */}
-      <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+      <div
+        className="h-2 w-full overflow-hidden rounded-full bg-white/10"
+        role="progressbar"
+        aria-label="Time remaining"
+        aria-valuenow={Math.round(state.timeRemaining)}
+        aria-valuemin={0}
+        aria-valuemax={TIMER_DURATION}
+      >
         <div
           className={cn(
             "h-full rounded-full transition-all duration-100",
@@ -289,7 +296,7 @@ export function ScoreChallenge() {
 
       {/* Result feedback */}
       {showResult && (
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-3" role="status" aria-live="polite">
           <p
             className={cn(
               "text-lg font-bold uppercase",

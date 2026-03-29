@@ -367,7 +367,7 @@ export function PinPickerCanvas() {
   if (!gameStarted) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-4 text-center">
-        <span className="text-6xl">🎯</span>
+        <span className="text-6xl" aria-hidden="true">🎯</span>
         <h1 className="text-3xl font-bold uppercase tracking-wider">Pin Picker</h1>
         <p className="max-w-md text-sm text-[var(--color-text-muted)]">
           Aim and roll to knock down pin formations in as few rolls as possible.
@@ -411,7 +411,7 @@ export function PinPickerCanvas() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
-        <canvas ref={canvasRef} className="block h-full w-full" />
+        <canvas ref={canvasRef} className="block h-full w-full" aria-label="Pin Picker game canvas — aim and launch the ball to knock down pins" />
 
         {/* Result overlay */}
         {phase === "RESULT" && (
@@ -430,7 +430,7 @@ export function PinPickerCanvas() {
         {phase === "LEVEL_COMPLETE" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60">
             <div className="flex flex-col items-center gap-3 rounded-xl bg-[var(--color-surface-panel)] p-6">
-              <span className="text-4xl">🎉</span>
+              <span className="text-4xl" aria-hidden="true">🎉</span>
               <p className="text-lg font-bold uppercase tracking-wider">Level Clear!</p>
               <p className="text-sm text-[var(--color-text-muted)]">
                 {rolls} {rolls === 1 ? "roll" : "rolls"}
@@ -450,7 +450,7 @@ export function PinPickerCanvas() {
         {phase === "GAME_OVER" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/70">
             <div className="flex flex-col items-center gap-4 rounded-xl bg-[var(--color-surface-panel)] p-8">
-              <span className="text-5xl">🏆</span>
+              <span className="text-5xl" aria-hidden="true">🏆</span>
               <p className="text-xl font-bold uppercase tracking-wider">All Levels Complete!</p>
               <p className="text-3xl font-black text-[var(--color-score-strike)]">{totalStars}⭐</p>
               <p className="text-sm text-[var(--color-text-muted)]">

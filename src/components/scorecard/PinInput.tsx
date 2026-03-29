@@ -37,6 +37,7 @@ export function PinInput({ maxPins, onRoll, disabled }: PinInputProps) {
               type="button"
               disabled={!isAllowed}
               onClick={() => onRoll(pin)}
+              aria-label={`Knock down ${pin} pin${pin !== 1 ? "s" : ""}`}
               className={cn(
                 "flex h-11 w-11 items-center justify-center rounded-lg text-sm font-bold transition-colors",
                 "border border-[var(--color-border-subtle)]",
@@ -65,6 +66,7 @@ export function PinInput({ maxPins, onRoll, disabled }: PinInputProps) {
               ? "cursor-pointer bg-[var(--color-score-strike)]/20 text-[var(--color-score-strike)] hover:bg-[var(--color-score-strike)]/40"
               : "cursor-not-allowed opacity-30",
           )}
+          aria-label="Strike — knock down all 10 pins"
         >
           Strike X
         </button>
@@ -79,6 +81,7 @@ export function PinInput({ maxPins, onRoll, disabled }: PinInputProps) {
               ? "cursor-pointer bg-[var(--color-brand-accent)]/20 text-[var(--color-brand-accent)] hover:bg-[var(--color-brand-accent)]/40"
               : "cursor-not-allowed opacity-30",
           )}
+          aria-label={`Spare — knock down remaining ${maxPins} pins`}
         >
           Spare /
         </button>

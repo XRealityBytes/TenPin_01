@@ -96,3 +96,24 @@ a {
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
+
+/* ── Loading bar animation ─────────────────────────────── */
+@keyframes loading-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+.loading-bar {
+  animation: loading-slide 1.2s ease-in-out infinite;
+}
+
+/* ── Reduced motion ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .loading-bar {
+    animation: none;
+  }
+
+  .accent-glow {
+    text-shadow: none;
+  }
+}

@@ -126,9 +126,16 @@ function SiteFooter() {
 export function GameShell({ children }: { children: ReactNode }) {
   return (
     <>
+      {/* Skip to main content link for keyboard users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-[var(--color-brand-accent)] focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white"
+      >
+        Skip to main content
+      </a>
       <SiteHeader />
       {/* Main content — bottom padding on mobile accounts for fixed tab bar */}
-      <main className="flex-1 pb-20 sm:pb-0">{children}</main>
+      <main id="main-content" className="flex-1 pb-20 sm:pb-0">{children}</main>
       <SiteFooter />
       <MobileTabBar />
     </>

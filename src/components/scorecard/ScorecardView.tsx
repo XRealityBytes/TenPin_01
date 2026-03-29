@@ -120,7 +120,7 @@ function SetupScreen({
   return (
     <Container className="flex min-h-[60vh] flex-col items-center justify-center gap-8 py-8">
       <div className="text-center">
-        <span className="text-6xl">🎳</span>
+        <span className="text-6xl" aria-hidden="true">🎳</span>
         <h1 className="mt-4 text-3xl font-bold uppercase tracking-wider">Scorecard</h1>
         <p className="mt-2 max-w-md text-sm text-[var(--color-text-muted)]">
           Track your real-world bowling matches with automatic scoring for up to
@@ -140,6 +140,7 @@ function SetupScreen({
               value={name}
               onChange={(e) => updateName(i, e.target.value)}
               maxLength={20}
+              aria-label={`Player ${i + 1} name`}
               className="flex-1 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--color-brand-accent)]"
               placeholder={`Player ${i + 1}`}
             />
@@ -147,6 +148,7 @@ function SetupScreen({
               <button
                 type="button"
                 onClick={() => removePlayer(i)}
+                aria-label={`Remove player ${i + 1}`}
                 className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-brand-accent)] hover:text-[var(--color-brand-accent)]"
               >
                 ×
@@ -204,7 +206,7 @@ function FinalScores({
 
   return (
     <div className="flex flex-col items-center gap-4 rounded-xl border border-[var(--color-score-strike)]/30 bg-[var(--color-surface-panel)] p-6 text-center">
-      <span className="text-5xl">🏆</span>
+      <span className="text-5xl" aria-hidden="true">🏆</span>
       <h2 className="text-xl font-bold uppercase tracking-wider">
         {match.players.length > 1 ? `${winner.name} Wins!` : "Game Complete!"}
       </h2>

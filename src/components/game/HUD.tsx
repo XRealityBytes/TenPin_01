@@ -87,7 +87,7 @@ export function HUD({ state, onNextRoll, onReset }: HUDProps) {
       {/* Center flash message */}
       {flashMessage && (
         <div className="flex flex-1 items-center justify-center">
-          <div className="animate-pulse rounded-xl bg-black/80 px-8 py-4 backdrop-blur-sm">
+          <div role="alert" aria-live="assertive" className="animate-pulse rounded-xl bg-black/80 px-8 py-4 backdrop-blur-sm">
             <p
               className={cn(
                 "text-3xl font-black uppercase tracking-wider",
@@ -139,7 +139,7 @@ export function HUD({ state, onNextRoll, onReset }: HUDProps) {
         {/* Game over */}
         {phase === "GAME_OVER" && (
           <div className="pointer-events-auto flex flex-col items-center gap-3 rounded-xl bg-black/80 px-8 py-6 backdrop-blur-sm">
-            <span className="text-4xl">🏆</span>
+            <span className="text-4xl" aria-hidden="true">🏆</span>
             <p className="text-xl font-bold uppercase tracking-wider">Game Over</p>
             <p className="text-3xl font-black tabular-nums text-[var(--color-brand-accent)]">
               {game.totalScore}

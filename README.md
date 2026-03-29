@@ -33,6 +33,18 @@ npm run dev
 | `npm run typecheck` | TypeScript type check |
 | `npm run format` | Check Prettier formatting |
 | `npm run format:write` | Auto-fix formatting |
+| `npm run test` | Run Vitest tests |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run generate-assets` | Generate AI assets (requires API keys) |
+| `npm run generate-assets:force` | Regenerate all assets |
+
+## Testing
+
+Uses **Vitest** for unit tests. The scoring engine has 24 comprehensive tests covering perfect games, gutter games, spare/strike combinations, 10th frame edge cases, and input validation.
+
+```bash
+npm run test
+```
 
 ## Project Structure
 
