@@ -1,8 +1,9 @@
 /**
- * Ball — the bowling ball with physics body and visual mesh.
+ * Ball — glossy reflective bowling ball with physics body.
  *
- * The ball is controlled by the game state: positioned during aim,
- * launched with velocity during roll, and hidden during reset.
+ * Features a deep dark surface with metallic sheen, finger holes,
+ * and a subtle colour swirl. Controlled by the game state machine:
+ * positioned during aim, launched with velocity during roll.
  */
 
 "use client";
@@ -90,7 +91,6 @@ export function Ball({ phase, aimX, power, spin, onStopped }: BallProps) {
     if (speed < 0.3) {
       stoppedFrames.current++;
       if (stoppedFrames.current > 90) {
-        // ~1.5s at 60fps
         onStopped();
       }
     } else {
@@ -109,14 +109,42 @@ export function Ball({ phase, aimX, power, spin, onStopped }: BallProps) {
   const visible = phase !== "RESETTING" && phase !== "GAME_OVER" && phase !== "IDLE";
 
   return (
-    <mesh ref={ref} castShadow visible={visible}>
-      <sphereGeometry args={[BALL_RADIUS, 24, 16]} />
-      <meshStandardMaterial color="#1a1a2e" roughness={0.2} metalness={0.4} />
-      {/* Finger holes - decorative */}
-      <mesh position={[0, BALL_RADIUS * 0.8, 0]} rotation={[0.3, 0, 0]}>
-        <cylinderGeometry args={[0.03, 0.03, 0.04, 8]} />
-        <meshStandardMaterial color="#0d0d0d" />
+    <group>
+      <mesh ref={ref} castShadow visible={visible}>
+        <sphereGeometry args={[BALL_RADIUS, 32, 24]} />
+        <meshStandardMaterial
+          color="#0c0c1e"
+          roughness={0.05}
+          metalness={0.6}
+          envMapIntensity={1.2}
+        />
+        {/* Finger holes */}
+        <group rotation={[0.3, 0.2, 0]}>
+          <mesh position={[0, BALL_RADIUS * 0.75, BALL_RADIUS * 0.3]}>
+            <cylinderGeometry args={[0.025, 0.025, 0.04, 8]} />
+            <meshStandardMaterial color="#020208" roughness={0.8} />
+          </mesh>
+          <mesh position={[0.05, BALL_RADIUS * 0.75, BALL_RADIUS * 0.15]}>
+            <cylinderGeometry args={[0.025, 0.025, 0.04, 8]} />
+            <meshStandardMaterial color="#020208" roughness={0.8} />
+          </mesh>
+          <mesh position={[-0.05, BALL_RADIUS * 0.75, BALL_RADIUS * 0.15]}>
+            <cylinderGeometry args={[0.02, 0.02, 0.04, 8]} />
+            <meshStandardMaterial color="#020208" roughness={0.8} />
+          </mesh>
+        </group>
+        {/* Deep red swirl accent band */}
+        <mesh rotation={[0.4, 0, 0.3]}>
+          <torusGeometry args={[BALL_RADIUS * 0.95, 0.008, 8, 48, Math.PI * 1.3]} />
+          <meshStandardMaterial
+            color="#660022"
+            roughness={0.15}
+            metalness={0.4}
+            emissive="#330011"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
       </mesh>
-    </mesh>
+    </group>
   );
 }

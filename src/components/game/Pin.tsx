@@ -1,16 +1,17 @@
 /**
- * Pin — a single bowling pin with physics body.
+ * Pin — a bowling pin with lathe-profile geometry and physics body.
  *
- * Uses cannon-es cylinder shape for collision. Renders as a simple
- * cylinder+sphere procedural mesh (no glTF needed for fallback).
- * Reports its rotation to the parent for pin-down detection.
+ * Uses cannon-es cylinder for collision. Renders a lathe geometry
+ * that closely approximates a real bowling pin silhouette — tapered
+ * body, narrow neck, round head. Glossy white with red stripe and
+ * subtle neon rim light catch.
  */
 
 "use client";
 
 import { useCylinder } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
 import {
@@ -24,6 +25,33 @@ import {
 
 import type { Triplet } from "@react-three/cannon";
 
+/**
+ * Build a lathe geometry that approximates a bowling pin profile.
+ * Points define half the cross-section; THREE.LatheGeometry revolves them.
+ */
+function usePinGeometry() {
+  return useMemo(() => {
+    const h = PIN_HEIGHT;
+    const r = PIN_RADIUS;
+    const points: THREE.Vector2[] = [
+      new THREE.Vector2(0, -h * 0.48),         // bottom center
+      new THREE.Vector2(r * 1.0, -h * 0.48),   // bottom edge
+      new THREE.Vector2(r * 1.1, -h * 0.38),   // lower belly
+      new THREE.Vector2(r * 1.15, -h * 0.2),   // widest belly
+      new THREE.Vector2(r * 1.1, -h * 0.05),   // upper belly
+      new THREE.Vector2(r * 0.85, h * 0.1),    // waist start
+      new THREE.Vector2(r * 0.55, h * 0.2),    // neck (narrowest)
+      new THREE.Vector2(r * 0.5, h * 0.25),    // neck
+      new THREE.Vector2(r * 0.55, h * 0.32),   // head start
+      new THREE.Vector2(r * 0.6, h * 0.38),    // head widest
+      new THREE.Vector2(r * 0.5, h * 0.44),    // head top curve
+      new THREE.Vector2(r * 0.25, h * 0.48),   // crown
+      new THREE.Vector2(0, h * 0.5),           // top center
+    ];
+    return new THREE.LatheGeometry(points, 16);
+  }, []);
+}
+
 interface PinProps {
   position: Triplet;
   index: number;
@@ -33,6 +61,7 @@ interface PinProps {
 
 export function Pin({ position, index, isStanding, onFallen }: PinProps) {
   const hasFallen = useRef(false);
+  const pinGeo = usePinGeometry();
 
   const [ref, api] = useCylinder<THREE.Group>(() => ({
     mass: isStanding ? PIN_MASS : 0,
@@ -64,20 +93,36 @@ export function Pin({ position, index, isStanding, onFallen }: PinProps) {
 
   return (
     <group ref={ref}>
-      {/* Pin body — tapered cylinder */}
-      <mesh castShadow>
-        <cylinderGeometry args={[PIN_RADIUS * 0.6, PIN_RADIUS, PIN_HEIGHT, 12]} />
-        <meshStandardMaterial color="#f5f0e8" roughness={0.3} metalness={0.05} />
+      {/* Pin body — lathe profile for realistic shape */}
+      <mesh castShadow geometry={pinGeo}>
+        <meshStandardMaterial
+          color="#f0ece4"
+          roughness={0.18}
+          metalness={0.05}
+          envMapIntensity={0.6}
+        />
       </mesh>
-      {/* Red stripe */}
-      <mesh position={[0, PIN_HEIGHT * 0.22, 0]}>
-        <cylinderGeometry args={[PIN_RADIUS * 0.65, PIN_RADIUS * 0.68, PIN_HEIGHT * 0.08, 12]} />
-        <meshStandardMaterial color="#cc0000" roughness={0.4} />
+
+      {/* Red neck stripe — signature bowling pin band */}
+      <mesh position={[0, PIN_HEIGHT * 0.2, 0]}>
+        <cylinderGeometry args={[PIN_RADIUS * 0.6, PIN_RADIUS * 0.65, PIN_HEIGHT * 0.06, 16]} />
+        <meshStandardMaterial
+          color="#cc0000"
+          roughness={0.3}
+          emissive="#660000"
+          emissiveIntensity={0.2}
+        />
       </mesh>
-      {/* Pin head — small sphere */}
-      <mesh position={[0, PIN_HEIGHT * 0.42, 0]} castShadow>
-        <sphereGeometry args={[PIN_RADIUS * 0.5, 12, 8]} />
-        <meshStandardMaterial color="#f5f0e8" roughness={0.3} metalness={0.05} />
+
+      {/* Second red stripe (thinner) */}
+      <mesh position={[0, PIN_HEIGHT * 0.14, 0]}>
+        <cylinderGeometry args={[PIN_RADIUS * 0.72, PIN_RADIUS * 0.75, PIN_HEIGHT * 0.03, 16]} />
+        <meshStandardMaterial
+          color="#cc0000"
+          roughness={0.3}
+          emissive="#660000"
+          emissiveIntensity={0.15}
+        />
       </mesh>
     </group>
   );

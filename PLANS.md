@@ -90,15 +90,15 @@ Tracks progress across all implementation phases.
 - [x] Add VS Code dev server task (`.vscode/tasks.json`)
 
 ## Phase 8 — Lane Play Visual Overhaul
-**Status: 🔄 In Progress**
+**Status: ✅ Complete**
 
-- [ ] Suppress THREE.Clock deprecation warning (R3F internal, monkey-patch)
-- [ ] Neon bowling alley environment (walls, ceiling, neon strip lights)
-- [ ] Post-processing bloom for neon glow effects
-- [ ] Upgraded lane: glossy wood, neon lane arrows, glowing foul line
-- [ ] Upgraded pins: lathe geometry, glossy material, better proportions
-- [ ] Upgraded ball: glossy reflective material, marble swirl effect
-- [ ] Dramatic neon lighting (red/cyan/blue matching Rowans brand aesthetic)
-- [ ] Camera follow during ball roll
-- [ ] Strike/spare visual effects (screen flash, particle burst)
-- [ ] Atmospheric fog and vignette
+- [x] Suppress THREE.Clock deprecation warning (R3F internal, monkey-patch)
+- [x] Neon bowling alley environment (walls, ceiling, neon strip lights)
+- [x] Post-processing bloom for neon glow effects
+- [x] Upgraded lane: glossy wood, neon lane arrows, glowing foul line
+- [x] Upgraded pins: lathe geometry, glossy material, better proportions
+- [x] Upgraded ball: glossy reflective material, marble swirl effect
+- [x] Dramatic neon lighting (red/cyan/blue matching Rowans brand aesthetic)
+- [x] Camera follow during ball roll
+- [x] Strike/spare visual effects (screen flash, particle burst)
+- [x] Atmospheric fog and vignette

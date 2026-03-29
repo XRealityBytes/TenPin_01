@@ -1,23 +1,26 @@
 /**
- * LaneScene — the main React Three Fiber canvas scene for Lane Play.
+ * LaneScene — immersive neon bowling alley with React Three Fiber.
  *
- * Sets up the 3D environment: camera, lighting, physics world, lane,
- * pins, ball, and ties into the game state hook for controls.
+ * Features: neon-lit environment, post-processing bloom, camera follow
+ * during ball roll, dramatic spotlights, and glossy materials.
+ * Designed to match the Rowans Bowling dark neon aesthetic.
  */
 
 "use client";
 
 import { Physics } from "@react-three/cannon";
-import { Environment, OrbitControls } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
+import { Suspense, useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 
 import { Ball } from "@/components/game/Ball";
 import { HUD } from "@/components/game/HUD";
 import { Lane } from "@/components/game/Lane";
+import { NeonAlley } from "@/components/game/NeonAlley";
 import { Pin } from "@/components/game/Pin";
 import { useBowlingGame } from "@/hooks/useBowlingGame";
+import type { BowlingPhase } from "@/hooks/useBowlingGame";
 import {
   BALL_START_Z,
   GRAVITY,
@@ -27,41 +30,46 @@ import {
   SETTLE_TIME,
 } from "@/lib/physics";
 
-/* ── Camera controller ──────────────────────────────────── */
+/* ── Camera controller with follow mode ─────────────────── */
 
-function GameCamera() {
+function GameCamera({ phase }: { phase: BowlingPhase }) {
   const { camera } = useThree();
+  const targetPos = useRef(new THREE.Vector3(0, 4, BALL_START_Z + 3));
+  const targetLook = useRef(new THREE.Vector3(0, 0, 0));
+  const lookAtVec = useRef(new THREE.Vector3(0, 0, 0));
 
   useEffect(() => {
+    // Set initial camera position
     camera.position.set(0, 4, BALL_START_Z + 3);
     camera.lookAt(0, 0, 0);
   }, [camera]);
 
+  useFrame(() => {
+    if (phase === "AIMING" || phase === "CHARGING") {
+      // Behind ball, elevated view down the lane
+      targetPos.current.set(0, 3.5, BALL_START_Z + 4);
+      targetLook.current.set(0, 0, -LANE_LENGTH / 4);
+    } else if (phase === "ROLLING") {
+      // Slightly higher and further back during roll for dramatic view
+      targetPos.current.set(0, 5, BALL_START_Z + 6);
+      targetLook.current.set(0, 0, -LANE_LENGTH / 3);
+    } else if (phase === "SETTLING" || phase === "SCORING") {
+      // Focus on pin area
+      targetPos.current.set(1.5, 3, -LANE_LENGTH / 4);
+      targetLook.current.set(0, 0.5, -LANE_LENGTH / 2 + 2);
+    } else if (phase === "GAME_OVER") {
+      // Cinematic wide shot
+      targetPos.current.set(3, 4, 2);
+      targetLook.current.set(0, 1, -LANE_LENGTH / 4);
+    }
+
+    // Smooth camera interpolation
+    camera.position.lerp(targetPos.current, 0.03);
+    lookAtVec.current.lerp(targetLook.current, 0.03);
+    camera.lookAt(lookAtVec.current);
+  });
+
   return null;
-}
-
-/* ── Scene lighting ─────────────────────────────────────── */
-
-function Lighting() {
-  return (
-    <>
-      <ambientLight intensity={0.3} />
-      <directionalLight
-        position={[5, 10, 5]}
-        intensity={1.2}
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-        shadow-camera-near={0.5}
-        shadow-camera-far={50}
-      />
-      {/* Neon red accent lights (Rowans aesthetic) */}
-      <pointLight position={[-LANE_WIDTH, 3, -LANE_LENGTH / 4]} color="#ff0000" intensity={0.5} distance={12} />
-      <pointLight position={[LANE_WIDTH, 3, -LANE_LENGTH / 4]} color="#ff0000" intensity={0.5} distance={12} />
-      {/* Overhead lane light */}
-      <pointLight position={[0, 5, 0]} intensity={0.8} distance={20} />
-    </>
-  );
 }
 
 /* ── Pin group ──────────────────────────────────────────── */
@@ -88,16 +96,70 @@ function PinGroup({
   );
 }
 
-/* ── Aim indicator ──────────────────────────────────────── */
+/* ── Neon aim laser ─────────────────────────────────────── */
 
-function AimLine({ aimX, visible }: { aimX: number; visible: boolean }) {
+function AimLaser({ aimX, visible }: { aimX: number; visible: boolean }) {
+  const groupRef = useRef<THREE.Group>(null);
+
+  useFrame(({ clock }) => {
+    if (groupRef.current) {
+      // Subtle pulse animation
+      const pulse = 0.3 + Math.sin(clock.getElapsedTime() * 4) * 0.15;
+      const mat = groupRef.current.children[1] as THREE.Mesh;
+      if (mat?.material && "opacity" in mat.material) {
+        (mat.material as THREE.MeshBasicMaterial).opacity = pulse;
+      }
+    }
+  });
+
   if (!visible) return null;
   const x = aimX * (LANE_WIDTH / 2 - 0.3);
+
   return (
-    <mesh position={[x, 0.02, BALL_START_Z - 4]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[0.02, 8]} />
-      <meshBasicMaterial color="#ff0000" transparent opacity={0.4} />
-    </mesh>
+    <group ref={groupRef}>
+      {/* Laser core */}
+      <mesh position={[x, 0.025, BALL_START_Z - 4]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.015, 10]} />
+        <meshBasicMaterial color="#ff0033" toneMapped={false} />
+      </mesh>
+      {/* Laser glow */}
+      <mesh position={[x, 0.024, BALL_START_Z - 4]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.1, 10]} />
+        <meshBasicMaterial color="#ff0033" toneMapped={false} transparent opacity={0.3} />
+      </mesh>
+      {/* Target dot at far end */}
+      <mesh position={[x, 0.03, BALL_START_Z - 9]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.06, 16]} />
+        <meshBasicMaterial color="#ff0033" toneMapped={false} transparent opacity={0.6} />
+      </mesh>
+    </group>
+  );
+}
+
+/* ── Strike flash effect ────────────────────────────────── */
+
+function StrikeFlash({ flashMessage }: { flashMessage: string | null }) {
+  const ref = useRef<THREE.PointLight>(null);
+  const active = flashMessage?.includes("STRIKE");
+
+  useFrame(({ clock }) => {
+    if (ref.current && active) {
+      const t = clock.getElapsedTime();
+      ref.current.intensity = 15 * Math.max(0, 1 - ((t % 2) * 2));
+    } else if (ref.current) {
+      ref.current.intensity = 0;
+    }
+  });
+
+  return (
+    <pointLight
+      ref={ref}
+      position={[0, 4, -LANE_LENGTH / 2 + 2]}
+      color="#ffaa00"
+      intensity={0}
+      distance={20}
+      decay={2}
+    />
   );
 }
 
@@ -114,8 +176,16 @@ function SceneInternals({
 }) {
   return (
     <>
-      <GameCamera />
-      <Lighting />
+      <GameCamera phase={gameState.phase} />
+
+      {/* Minimal ambient — let neons do the work */}
+      <ambientLight intensity={0.08} color="#111122" />
+
+      {/* Neon bowling alley environment */}
+      <NeonAlley />
+
+      {/* Strike flash */}
+      <StrikeFlash flashMessage={gameState.flashMessage} />
 
       <Physics gravity={GRAVITY} iterations={10} tolerance={0.001}>
         <Lane />
@@ -129,11 +199,22 @@ function SceneInternals({
         />
       </Physics>
 
-      <AimLine aimX={gameState.aimX} visible={gameState.phase === "AIMING" || gameState.phase === "CHARGING"} />
+      <AimLaser aimX={gameState.aimX} visible={gameState.phase === "AIMING" || gameState.phase === "CHARGING"} />
 
-      {/* Dark environment for mood */}
-      <fog attach="fog" args={["#000000", 15, 30]} />
-      <color attach="background" args={["#0a0a0a"]} />
+      {/* Deep fog for drama */}
+      <fog attach="fog" args={["#050510", 12, 28]} />
+      <color attach="background" args={["#050510"]} />
+
+      {/* Post-processing: bloom for neon glow + vignette for mood */}
+      <EffectComposer>
+        <Bloom
+          luminanceThreshold={0.6}
+          luminanceSmoothing={0.4}
+          intensity={1.2}
+          mipmapBlur
+        />
+        <Vignette offset={0.3} darkness={0.7} />
+      </EffectComposer>
     </>
   );
 }
@@ -156,7 +237,6 @@ function usePointerControls(
         game.startCharge();
         chargeStart.current = Date.now();
 
-        // Start power bar animation
         chargeInterval.current = setInterval(() => {
           const elapsed = (Date.now() - chargeStart.current) / 2000;
           game.setPower(Math.min(elapsed, 1));
@@ -228,7 +308,6 @@ export function LanePlayGame() {
   const handleBallStopped = useCallback(() => {
     game.ballStopped();
 
-    // Wait for pins to settle, then report
     settleTimer.current = setTimeout(() => {
       const standing = game.state.standingPins.map(
         (wasStanding, i) => wasStanding && !fallenPins.current.has(i),
@@ -242,7 +321,6 @@ export function LanePlayGame() {
     fallenPins.current.add(index);
   }, []);
 
-  // Clean up settle timer
   useEffect(() => {
     return () => {
       if (settleTimer.current) clearTimeout(settleTimer.current);
@@ -254,7 +332,11 @@ export function LanePlayGame() {
       <Canvas
         shadows="basic"
         dpr={[1, 2]}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
+        gl={{
+          antialias: true,
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.2,
+        }}
       >
         <Suspense fallback={null}>
           <SceneInternals

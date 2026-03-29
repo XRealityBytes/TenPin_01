@@ -7,6 +7,7 @@
 
 "use client";
 
+import "@/lib/patchThreeDeprecations";
 import dynamic from "next/dynamic";
 
 const LanePlayGame = dynamic(
