@@ -11,7 +11,9 @@
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "generate-assets": "tsx scripts/generate-assets.ts",
+    "generate-assets:force": "tsx scripts/generate-assets.ts --force"
   },
   "dependencies": {
     "next": "16.2.1",
@@ -23,10 +25,14 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
+    "openai": "^6.33.0",
     "prettier": "^3.8.1",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.2"
   }
