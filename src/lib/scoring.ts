@@ -79,24 +79,24 @@ function buildMarks(rolls: number[], isTenthFrame: boolean): FrameMark[] {
  * and spare bonuses. Frames whose bonuses haven't been rolled yet get
  * `cumulativeScore: null` and `isScored: false`.
  */
-export function calculateGame(rolls: number[]): GameState {
+export function calculateGame(rolls: number[], totalFrames: number = TOTAL_FRAMES): GameState {
   const frames: FrameResult[] = [];
   let rollIdx = 0; // cursor into the flat rolls array
   let cumulativeScore = 0;
   let allScored = true;
 
-  for (let f = 0; f < TOTAL_FRAMES; f++) {
-    const isTenth = f === 9;
+  for (let f = 0; f < totalFrames; f++) {
+    const isLastFrame = f === totalFrames - 1;
     const frameRolls: number[] = [];
 
-    if (isTenth) {
-      // Frame 10: consume remaining rolls (2 or 3)
+    if (isLastFrame) {
+      // Last frame: consume remaining rolls (2 or 3)
       while (rollIdx < rolls.length && frameRolls.length < 3) {
         frameRolls.push(rolls[rollIdx++]);
       }
 
-      // Determine if frame 10 is complete
-      const tenthComplete =
+      // Determine if last frame is complete
+      const lastFrameComplete =
         frameRolls.length >= 2 &&
         (frameRolls[0] !== TOTAL_PINS &&
           frameRolls[0] + (frameRolls[1] ?? 0) !== TOTAL_PINS
@@ -104,7 +104,7 @@ export function calculateGame(rolls: number[]): GameState {
           : frameRolls.length >= 3);
 
       const frameScore = frameRolls.reduce((a, b) => a + b, 0);
-      const scored = tenthComplete;
+      const scored = lastFrameComplete;
       if (scored) {
         cumulativeScore += frameScore;
       } else {
@@ -184,8 +184,8 @@ export function calculateGame(rolls: number[]): GameState {
     }
   }
 
-  // Pad with empty frames if not all 10 have rolls
-  while (frames.length < TOTAL_FRAMES) {
+  // Pad with empty frames if not all frames have rolls
+  while (frames.length < totalFrames) {
     frames.push({
       frameNumber: frames.length + 1,
       rolls: [],
@@ -200,16 +200,16 @@ export function calculateGame(rolls: number[]): GameState {
   // Determine current frame and roll
   let currentFrame = 0;
   let currentRoll = 0;
-  for (let f = 0; f < TOTAL_FRAMES; f++) {
+  for (let f = 0; f < totalFrames; f++) {
     const frame = frames[f];
-    const isTenth = f === 9;
-    if (isTenth) {
+    const isLast = f === totalFrames - 1;
+    if (isLast) {
       if (!frame.isScored) {
         currentFrame = f;
         currentRoll = frame.rolls.length;
         break;
       } else {
-        currentFrame = TOTAL_FRAMES; // game over
+        currentFrame = totalFrames; // game over
       }
     } else {
       if (frame.rolls.length === 0 || (!frame.isStrike && frame.rolls.length < 2)) {
@@ -221,12 +221,12 @@ export function calculateGame(rolls: number[]): GameState {
   }
 
   const isComplete =
-    frames.length === TOTAL_FRAMES && frames.every((f) => f.isScored);
+    frames.length === totalFrames && frames.every((f) => f.isScored);
 
   return {
     rolls,
     frames,
-    currentFrame: isComplete ? TOTAL_FRAMES : currentFrame,
+    currentFrame: isComplete ? totalFrames : currentFrame,
     currentRoll: isComplete ? 0 : currentRoll,
     totalScore: cumulativeScore,
     isComplete,
@@ -241,28 +241,28 @@ export function calculateGame(rolls: number[]): GameState {
  * - In frames 1–9, second roll can't exceed pins remaining.
  * - In frame 10, pins reset after a strike or spare.
  */
-export function validateRoll(rolls: number[], newPins: number): boolean {
+export function validateRoll(rolls: number[], newPins: number, totalFrames: number = TOTAL_FRAMES): boolean {
   if (newPins < 0 || newPins > TOTAL_PINS || !Number.isInteger(newPins)) {
     return false;
   }
 
-  const game = calculateGame(rolls);
+  const game = calculateGame(rolls, totalFrames);
 
   if (game.isComplete) return false;
 
   const frame = game.frames[game.currentFrame];
   const rollInFrame = frame ? frame.rolls.length : 0;
-  const isTenth = game.currentFrame === 9;
+  const isLastFrame = game.currentFrame === totalFrames - 1;
 
-  if (!isTenth) {
-    // Frames 1–9: second roll can't exceed remaining pins
+  if (!isLastFrame) {
+    // Non-last frames: second roll can't exceed remaining pins
     if (rollInFrame === 1) {
       return newPins <= TOTAL_PINS - frame.rolls[0];
     }
     return newPins <= TOTAL_PINS;
   }
 
-  // Frame 10 logic
+  // Last frame logic
   if (rollInFrame === 0) {
     return newPins <= TOTAL_PINS;
   }
@@ -299,20 +299,20 @@ export function validateRoll(rolls: number[], newPins: number): boolean {
  *
  * Useful for enabling/disabling pin-count buttons in the UI.
  */
-export function getMaxPins(rolls: number[]): number {
-  const game = calculateGame(rolls);
+export function getMaxPins(rolls: number[], totalFrames: number = TOTAL_FRAMES): number {
+  const game = calculateGame(rolls, totalFrames);
   if (game.isComplete) return 0;
 
   const frame = game.frames[game.currentFrame];
   const rollInFrame = frame ? frame.rolls.length : 0;
-  const isTenth = game.currentFrame === 9;
+  const isLastFrame = game.currentFrame === totalFrames - 1;
 
-  if (!isTenth) {
+  if (!isLastFrame) {
     if (rollInFrame === 1) return TOTAL_PINS - frame.rolls[0];
     return TOTAL_PINS;
   }
 
-  // Frame 10
+  // Last frame
   if (rollInFrame === 0) return TOTAL_PINS;
   if (rollInFrame === 1) {
     return frame.rolls[0] === TOTAL_PINS

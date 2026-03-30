@@ -10,8 +10,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { cn } from "@/lib/cn";
-import { LEVELS, PIN_LAYOUT, type PinPickerLevel } from "@/content/pin-picker-levels";
+import { LEVELS, PIN_LAYOUT } from "@/content/pin-picker-levels";
 
 /* ── Constants ──────────────────────────────────────────── */
 
@@ -57,7 +56,7 @@ export function PinPickerCanvas() {
   const [totalStars, setTotalStars] = useState(0);
   const [phase, setPhase] = useState<Phase>("AIMING");
   const [aimX, setAimX] = useState(0.5);
-  const [levelStars, setLevelStars] = useState(0);
+  const [, setLevelStars] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
 
   // Mutable game refs (don't re-render on every frame)
@@ -227,16 +226,15 @@ export function PinPickerCanvas() {
   /** Update game state per frame. */
   const update = useCallback(() => {
     const ball = ballRef.current;
-    const pins = pinsRef.current;
-    const { w, h } = canvasSizeRef.current;
+    const { h } = canvasSizeRef.current;
     const laneTop = h * 0.05;
 
-    // Animate falling pins
-    for (const pin of pins) {
-      if (!pin.standing && pin.fallProgress < 1) {
-        pin.fallProgress = Math.min(1, pin.fallProgress + 0.08);
-      }
-    }
+    // Animate falling pins (immutable update to satisfy React compiler)
+    pinsRef.current = pinsRef.current.map((pin) =>
+      !pin.standing && pin.fallProgress < 1
+        ? { ...pin, fallProgress: Math.min(1, pin.fallProgress + 0.08) }
+        : pin,
+    );
 
     if (phaseRef.current !== "ROLLING" || !ball.active) return;
 
@@ -245,24 +243,23 @@ export function PinPickerCanvas() {
     ball.x += ball.dx;
 
     // Check pin collisions
-    for (const pin of pins) {
-      if (!pin.standing) continue;
+    pinsRef.current = pinsRef.current.map((pin) => {
+      if (!pin.standing) return pin;
       const dx = ball.x - pin.x;
       const dy = ball.y - pin.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < PIN_HIT_RADIUS + BALL_RADIUS) {
-        pin.standing = false;
-        // slight deflection on ball
         ball.dx += (dx > 0 ? -0.3 : 0.3);
+        return { ...pin, standing: false };
       }
-    }
+      return pin;
+    });
 
     // Ball off screen or past pins
     if (ball.y < laneTop - 20) {
       ball.active = false;
 
-      // Check if all pins down
-      const anyStanding = pins.some((p) => p.standing);
+      const anyStanding = pinsRef.current.some((p) => p.standing);
       if (!anyStanding) {
         setPhase("LEVEL_COMPLETE");
       } else {
@@ -270,13 +267,6 @@ export function PinPickerCanvas() {
       }
     }
   }, []);
-
-  /** Game loop. */
-  const loop = useCallback(() => {
-    update();
-    draw();
-    animRef.current = requestAnimationFrame(loop);
-  }, [update, draw]);
 
   /** Launch the ball. */
   const launchBall = useCallback(() => {
@@ -348,7 +338,13 @@ export function PinPickerCanvas() {
   useEffect(() => {
     if (!gameStarted) return;
     resizeCanvas();
-    animRef.current = requestAnimationFrame(loop);
+
+    const tick = () => {
+      update();
+      draw();
+      animRef.current = requestAnimationFrame(tick);
+    };
+    animRef.current = requestAnimationFrame(tick);
 
     const handleResize = () => {
       resizeCanvas();
@@ -360,7 +356,7 @@ export function PinPickerCanvas() {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener("resize", handleResize);
     };
-  }, [gameStarted, loop, resizeCanvas, initLevel, currentLevel]);
+  }, [gameStarted, update, draw, resizeCanvas, initLevel, currentLevel]);
 
   /* ── Render ───────────────────────────────────────── */
 
@@ -369,14 +365,14 @@ export function PinPickerCanvas() {
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-4 text-center">
         <span className="text-6xl" aria-hidden="true">🎯</span>
         <h1 className="text-3xl font-bold uppercase tracking-wider">Pin Picker</h1>
-        <p className="max-w-md text-sm text-[var(--color-text-muted)]">
+        <p className="max-w-md text-sm text-text-muted">
           Aim and roll to knock down pin formations in as few rolls as possible.
           15 levels from easy full racks to nasty splits!
         </p>
         <button
           type="button"
           onClick={startGame}
-          className="rounded-full bg-[var(--color-brand-accent)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
+          className="rounded-full bg-accent px-8 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
         >
           Start Game
         </button>
@@ -391,15 +387,15 @@ export function PinPickerCanvas() {
       {/* Level info bar */}
       <div className="flex items-center justify-between bg-black/60 px-4 py-2 backdrop-blur-sm">
         <div>
-          <span className="text-xs text-[var(--color-text-muted)]">Level {level?.id ?? 0} </span>
+          <span className="text-xs text-text-muted">Level {level?.id ?? 0} </span>
           <span className="text-sm font-bold">{level?.name ?? ""}</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-[var(--color-text-muted)]">
+          <span className="text-xs text-text-muted">
             Rolls: <span className="font-bold">{rolls}</span>
           </span>
-          <span className="text-xs text-[var(--color-text-muted)]">
-            Stars: <span className="font-bold text-[var(--color-score-strike)]">{totalStars}⭐</span>
+          <span className="text-xs text-text-muted">
+            Stars: <span className="font-bold text-(--color-score-strike)">{totalStars}⭐</span>
           </span>
         </div>
       </div>
@@ -419,7 +415,7 @@ export function PinPickerCanvas() {
             <button
               type="button"
               onClick={continueRolling}
-              className="rounded-full bg-[var(--color-surface-elevated)] px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors hover:bg-[var(--color-brand-accent)]"
+              className="rounded-full bg-surface-elevated px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors hover:bg-accent"
             >
               Roll Again
             </button>
@@ -429,16 +425,16 @@ export function PinPickerCanvas() {
         {/* Level complete overlay */}
         {phase === "LEVEL_COMPLETE" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-            <div className="flex flex-col items-center gap-3 rounded-xl bg-[var(--color-surface-panel)] p-6">
+            <div className="flex flex-col items-center gap-3 rounded-xl bg-panel p-6">
               <span className="text-4xl" aria-hidden="true">🎉</span>
               <p className="text-lg font-bold uppercase tracking-wider">Level Clear!</p>
-              <p className="text-sm text-[var(--color-text-muted)]">
+              <p className="text-sm text-text-muted">
                 {rolls} {rolls === 1 ? "roll" : "rolls"}
               </p>
               <button
                 type="button"
                 onClick={nextLevel}
-                className="rounded-full bg-[var(--color-brand-accent)] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
+                className="rounded-full bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
               >
                 {currentLevel + 1 < LEVELS.length ? "Next Level" : "See Results"}
               </button>
@@ -449,17 +445,17 @@ export function PinPickerCanvas() {
         {/* Game over overlay */}
         {phase === "GAME_OVER" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/70">
-            <div className="flex flex-col items-center gap-4 rounded-xl bg-[var(--color-surface-panel)] p-8">
+            <div className="flex flex-col items-center gap-4 rounded-xl bg-panel p-8">
               <span className="text-5xl" aria-hidden="true">🏆</span>
               <p className="text-xl font-bold uppercase tracking-wider">All Levels Complete!</p>
-              <p className="text-3xl font-black text-[var(--color-score-strike)]">{totalStars}⭐</p>
-              <p className="text-sm text-[var(--color-text-muted)]">
+              <p className="text-3xl font-black text-(--color-score-strike)">{totalStars}⭐</p>
+              <p className="text-sm text-text-muted">
                 out of {LEVELS.length * 3} possible stars
               </p>
               <button
                 type="button"
                 onClick={startGame}
-                className="rounded-full bg-[var(--color-brand-accent)] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
+                className="rounded-full bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
               >
                 Play Again
               </button>

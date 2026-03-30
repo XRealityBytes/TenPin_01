@@ -53,6 +53,14 @@ export function ScoreChallenge() {
   });
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerBarRef = useRef<HTMLDivElement>(null);
+
+  // Update timer bar width imperatively (avoids inline style lint error)
+  useEffect(() => {
+    if (timerBarRef.current) {
+      timerBarRef.current.style.width = `${(state.timeRemaining / TIMER_DURATION) * 100}%`;
+    }
+  }, [state.timeRemaining]);
 
   /** Start timer countdown. */
   const startTimer = useCallback(() => {
@@ -152,14 +160,14 @@ export function ScoreChallenge() {
       <Container className="flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
         <span className="text-6xl" aria-hidden="true">🧠</span>
         <h1 className="text-3xl font-bold uppercase tracking-wider">Score Challenge</h1>
-        <p className="max-w-md text-sm text-[var(--color-text-muted)]">
+        <p className="max-w-md text-sm text-text-muted">
           Test your bowling scoring knowledge! 10 questions with increasing
           difficulty. Answer quickly for bonus points.
         </p>
         <button
           type="button"
           onClick={startGame}
-          className="rounded-full bg-[var(--color-brand-accent)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
+          className="rounded-full bg-accent px-8 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
         >
           Start Quiz
         </button>
@@ -174,17 +182,17 @@ export function ScoreChallenge() {
         <span className="text-5xl" aria-hidden="true">🏆</span>
         <h2 className="text-2xl font-bold uppercase tracking-wider">Quiz Complete!</h2>
         <div className="flex flex-col gap-2">
-          <p className="text-4xl font-black tabular-nums text-[var(--color-brand-accent)]">
+          <p className="text-4xl font-black tabular-nums text-accent">
             {state.score}
           </p>
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p className="text-sm text-text-muted">
             {state.correctCount}/{state.questions.length} correct ({percentage}%)
           </p>
         </div>
         <button
           type="button"
           onClick={startGame}
-          className="rounded-full bg-[var(--color-brand-accent)] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
+          className="rounded-full bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
         >
           Play Again
         </button>
@@ -200,7 +208,7 @@ export function ScoreChallenge() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="rounded-full bg-[var(--color-surface-elevated)] px-3 py-1 text-xs font-bold">
+          <span className="rounded-full bg-surface-elevated px-3 py-1 text-xs font-bold">
             Q{state.currentQuestion + 1}/{state.questions.length}
           </span>
           <span
@@ -216,11 +224,11 @@ export function ScoreChallenge() {
         </div>
         <div className="flex items-center gap-3">
           {state.streak > 1 && (
-            <span className="text-xs font-bold text-[var(--color-score-strike)]">
+            <span className="text-xs font-bold text-(--color-score-strike)">
               🔥 {state.streak}x streak
             </span>
           )}
-          <span className="text-lg font-black tabular-nums text-[var(--color-brand-accent)]">
+          <span className="text-lg font-black tabular-nums text-accent">
             {state.score}
           </span>
         </div>
@@ -229,13 +237,11 @@ export function ScoreChallenge() {
       {/* Timer bar */}
       <div
         className="h-2 w-full overflow-hidden rounded-full bg-white/10"
-        role="progressbar"
-        aria-label="Time remaining"
-        aria-valuenow={Math.round(state.timeRemaining)}
-        aria-valuemin={0}
-        aria-valuemax={TIMER_DURATION}
+        role="timer"
+        aria-label={`${Math.round(state.timeRemaining)} seconds remaining`}
       >
         <div
+          ref={timerBarRef}
           className={cn(
             "h-full rounded-full transition-all duration-100",
             state.timeRemaining > 5
@@ -244,13 +250,12 @@ export function ScoreChallenge() {
                 ? "bg-yellow-500"
                 : "bg-red-500",
           )}
-          style={{ width: `${(state.timeRemaining / TIMER_DURATION) * 100}%` }}
         />
       </div>
 
       {/* Scenario */}
-      <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-panel)] p-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
+      <div className="rounded-xl border border-border bg-panel p-4">
+        <p className="text-xs font-bold uppercase tracking-wider text-text-muted">
           Scenario
         </p>
         <p className="mt-2 font-mono text-sm leading-relaxed">{question.scenario}</p>
@@ -264,7 +269,7 @@ export function ScoreChallenge() {
         {question.choices.map((choice, i) => {
           const isSelected = state.selectedAnswer === i;
           const isCorrectAnswer = i === question.correctIndex;
-          let bgClass = "bg-[var(--color-surface-elevated)] hover:bg-[var(--color-brand-accent)]/20";
+          let bgClass = "bg-surface-elevated hover:bg-accent/20";
 
           if (showResult) {
             if (isCorrectAnswer) {
@@ -272,7 +277,7 @@ export function ScoreChallenge() {
             } else if (isSelected && !state.isCorrect) {
               bgClass = "bg-red-500/20 ring-2 ring-red-500";
             } else {
-              bgClass = "bg-[var(--color-surface-elevated)] opacity-50";
+              bgClass = "bg-surface-elevated opacity-50";
             }
           }
 
@@ -283,7 +288,7 @@ export function ScoreChallenge() {
               disabled={showResult}
               onClick={() => selectAnswer(i)}
               className={cn(
-                "flex h-16 items-center justify-center rounded-xl border border-[var(--color-border-subtle)] text-xl font-bold tabular-nums transition-all",
+                "flex h-16 items-center justify-center rounded-xl border border-border text-xl font-bold tabular-nums transition-all",
                 bgClass,
                 !showResult && "cursor-pointer active:scale-95",
               )}
@@ -306,9 +311,9 @@ export function ScoreChallenge() {
             {state.isCorrect ? "Correct! ✓" : "Wrong ✗"}
           </p>
           {!state.isCorrect && (
-            <p className="text-sm text-[var(--color-text-muted)]">
+            <p className="text-sm text-text-muted">
               The answer was{" "}
-              <span className="font-bold text-[var(--color-text-primary)]">
+              <span className="font-bold text-(--color-text-primary)">
                 {question.choices[question.correctIndex]}
               </span>
             </p>
@@ -316,7 +321,7 @@ export function ScoreChallenge() {
           <button
             type="button"
             onClick={nextQuestion}
-            className="rounded-full bg-[var(--color-brand-accent)] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
           >
             {state.currentQuestion + 1 < state.questions.length ? "Next Question" : "See Results"}
           </button>

@@ -4,6 +4,7 @@
  * Features: neon-lit environment, post-processing bloom, camera follow
  * during ball roll, dramatic spotlights, and glossy materials.
  * Designed to match the Rowans Bowling dark neon aesthetic.
+ * Supports multiplayer with name entry and left-side scoreboard.
  */
 
 "use client";
@@ -21,6 +22,8 @@ import { NeonAlley } from "@/components/game/NeonAlley";
 import { Pin } from "@/components/game/Pin";
 import { useBowlingGame } from "@/hooks/useBowlingGame";
 import type { BowlingPhase } from "@/hooks/useBowlingGame";
+import { getBallById } from "@/data/bowlingBalls";
+import type { BallStyle } from "@/data/bowlingBalls";
 import {
   BALL_START_Z,
   GRAVITY,
@@ -167,10 +170,12 @@ function StrikeFlash({ flashMessage }: { flashMessage: string | null }) {
 
 function SceneInternals({
   gameState,
+  activeBallStyle,
   onBallStopped,
   onPinFallen,
 }: {
   gameState: ReturnType<typeof useBowlingGame>["state"];
+  activeBallStyle?: BallStyle;
   onBallStopped: () => void;
   onPinFallen: (index: number) => void;
 }) {
@@ -178,8 +183,8 @@ function SceneInternals({
     <>
       <GameCamera phase={gameState.phase} />
 
-      {/* Minimal ambient — let neons do the work */}
-      <ambientLight intensity={0.08} color="#111122" />
+      {/* Ambient — brighter for visibility while keeping mood */}
+      <ambientLight intensity={0.25} color="#1a1a33" />
 
       {/* Neon bowling alley environment */}
       <NeonAlley />
@@ -191,18 +196,20 @@ function SceneInternals({
         <Lane />
         <PinGroup standingPins={gameState.standingPins} onPinFallen={onPinFallen} />
         <Ball
+          key={`ball-${gameState.turnKey}`}
           phase={gameState.phase}
           aimX={gameState.aimX}
           power={gameState.power}
           spin={gameState.spin}
           onStopped={onBallStopped}
+          ballStyle={activeBallStyle}
         />
       </Physics>
 
       <AimLaser aimX={gameState.aimX} visible={gameState.phase === "AIMING" || gameState.phase === "CHARGING"} />
 
-      {/* Deep fog for drama */}
-      <fog attach="fog" args={["#050510", 12, 28]} />
+      {/* Deep fog for drama — pushed further out for brighter feel */}
+      <fog attach="fog" args={["#050510", 16, 35]} />
       <color attach="background" args={["#050510"]} />
 
       {/* Post-processing: bloom for neon glow + vignette for mood */}
@@ -297,13 +304,18 @@ function usePointerControls(
 
 /* ── Main Export ─────────────────────────────────────────── */
 
-export function LanePlayGame() {
-  const game = useBowlingGame();
+export function LanePlayGame({ playerNames, ballSelections }: { playerNames: string[]; ballSelections?: string[] }) {
+  const game = useBowlingGame(playerNames, 2);
   const canvasRef = useRef<HTMLDivElement>(null);
   const fallenPins = useRef<Set<number>>(new Set());
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   usePointerControls(canvasRef, game);
+
+  // Resolve the active player's ball style
+  const activeBallStyle = ballSelections
+    ? getBallById(ballSelections[game.state.activePlayerIndex]).style
+    : undefined;
 
   const handleBallStopped = useCallback(() => {
     game.ballStopped();
@@ -341,6 +353,7 @@ export function LanePlayGame() {
         <Suspense fallback={null}>
           <SceneInternals
             gameState={game.state}
+            activeBallStyle={activeBallStyle}
             onBallStopped={handleBallStopped}
             onPinFallen={handlePinFallen}
           />

@@ -11,7 +11,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { calculateGame, getMaxPins, validateRoll } from "@/lib/scoring";
 import type { MatchState, PlayerState } from "@/types/scoring";
@@ -56,30 +56,25 @@ function createMatch(playerNames: string[]): MatchState {
 /* ── Hook ───────────────────────────────────────────────── */
 
 export function useScorecard() {
-  const [match, setMatch] = useState<MatchState | null>(null);
-  const [hasSaved, setHasSaved] = useState(false);
-  const hydrated = useRef(false);
-
-  /* Hydrate from localStorage on mount */
-  useEffect(() => {
-    if (hydrated.current) return;
-    hydrated.current = true;
+  const [match, setMatch] = useState<MatchState | null>(() => {
+    // Hydrate from localStorage during initial render (avoids setState-in-effect)
+    if (typeof window === "undefined") return null;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed: MatchState = JSON.parse(raw);
-        // Recompute game states from rolls (the source of truth)
         parsed.players = parsed.players.map((p) => ({
           ...p,
           game: calculateGame(p.game.rolls),
         }));
-        setMatch(parsed);
-        setHasSaved(true);
+        return parsed;
       }
     } catch {
       // corrupt data — ignore
     }
-  }, []);
+    return null;
+  });
+  const hasSaved = match !== null;
 
   /* Persist to localStorage on every state change */
   useEffect(() => {
@@ -98,7 +93,6 @@ export function useScorecard() {
     const clamped = names.slice(0, MAX_PLAYERS);
     if (clamped.length < MIN_PLAYERS) clamped.push("Player 1");
     setMatch(createMatch(clamped));
-    setHasSaved(true);
   }, []);
 
   /** Resume the saved match (no-op if already loaded). */
@@ -110,7 +104,6 @@ export function useScorecard() {
   const clearMatch = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setMatch(null);
-    setHasSaved(false);
   }, []);
 
   /** Record a roll for the active player. */

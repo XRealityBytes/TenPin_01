@@ -13,7 +13,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "generate-assets": "tsx scripts/generate-assets.ts",
-    "generate-assets:force": "tsx scripts/generate-assets.ts --force"
+    "generate-assets:force": "tsx scripts/generate-assets.ts --force",
+    "generate-balls": "tsx scripts/generate-bowling-balls.ts",
+    "generate-balls:force": "tsx scripts/generate-bowling-balls.ts --force"
   },
   "dependencies": {
     "@react-three/cannon": "^6.6.0",

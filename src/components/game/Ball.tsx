@@ -10,7 +10,7 @@
 
 import { useSphere } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
 import {
@@ -24,8 +24,20 @@ import {
   LANE_WIDTH,
 } from "@/lib/physics";
 import type { BowlingPhase } from "@/hooks/useBowlingGame";
+import type { BallStyle } from "@/data/bowlingBalls";
 
 import type { Triplet } from "@react-three/cannon";
+
+const DEFAULT_STYLE: BallStyle = {
+  color: "#0c0c1e",
+  roughness: 0.05,
+  metalness: 0.6,
+  envMapIntensity: 1.2,
+  swirlColor: "#660022",
+  swirlEmissive: "#330011",
+  swirlEmissiveIntensity: 0.3,
+  holeColor: "#020208",
+};
 
 interface BallProps {
   phase: BowlingPhase;
@@ -33,11 +45,21 @@ interface BallProps {
   power: number;
   spin: number;
   onStopped: () => void;
+  ballStyle?: BallStyle;
 }
 
-export function Ball({ phase, aimX, power, spin, onStopped }: BallProps) {
+export function Ball({ phase, aimX, power, spin, onStopped, ballStyle }: BallProps) {
+  const s = ballStyle ?? DEFAULT_STYLE;
   const hasLaunched = useRef(false);
   const stoppedFrames = useRef(0);
+
+  // Load texture map if the style specifies one
+  const texture = useMemo(() => {
+    if (!s.texturePath) return null;
+    const tex = new THREE.TextureLoader().load(s.texturePath);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }, [s.texturePath]);
 
   const startX = aimX * (LANE_WIDTH / 2 - BALL_RADIUS * 2);
   const startPos: Triplet = [startX, BALL_RADIUS + 0.1, BALL_START_Z];
@@ -113,35 +135,36 @@ export function Ball({ phase, aimX, power, spin, onStopped }: BallProps) {
       <mesh ref={ref} castShadow visible={visible}>
         <sphereGeometry args={[BALL_RADIUS, 32, 24]} />
         <meshStandardMaterial
-          color="#0c0c1e"
-          roughness={0.05}
-          metalness={0.6}
-          envMapIntensity={1.2}
+          color={texture ? "#ffffff" : s.color}
+          map={texture}
+          roughness={s.roughness}
+          metalness={s.metalness}
+          envMapIntensity={s.envMapIntensity}
         />
         {/* Finger holes */}
         <group rotation={[0.3, 0.2, 0]}>
           <mesh position={[0, BALL_RADIUS * 0.75, BALL_RADIUS * 0.3]}>
             <cylinderGeometry args={[0.025, 0.025, 0.04, 8]} />
-            <meshStandardMaterial color="#020208" roughness={0.8} />
+            <meshStandardMaterial color={s.holeColor} roughness={0.8} />
           </mesh>
           <mesh position={[0.05, BALL_RADIUS * 0.75, BALL_RADIUS * 0.15]}>
             <cylinderGeometry args={[0.025, 0.025, 0.04, 8]} />
-            <meshStandardMaterial color="#020208" roughness={0.8} />
+            <meshStandardMaterial color={s.holeColor} roughness={0.8} />
           </mesh>
           <mesh position={[-0.05, BALL_RADIUS * 0.75, BALL_RADIUS * 0.15]}>
             <cylinderGeometry args={[0.02, 0.02, 0.04, 8]} />
-            <meshStandardMaterial color="#020208" roughness={0.8} />
+            <meshStandardMaterial color={s.holeColor} roughness={0.8} />
           </mesh>
         </group>
         {/* Deep red swirl accent band */}
         <mesh rotation={[0.4, 0, 0.3]}>
           <torusGeometry args={[BALL_RADIUS * 0.95, 0.008, 8, 48, Math.PI * 1.3]} />
           <meshStandardMaterial
-            color="#660022"
+            color={s.swirlColor}
             roughness={0.15}
             metalness={0.4}
-            emissive="#330011"
-            emissiveIntensity={0.3}
+            emissive={s.swirlEmissive}
+            emissiveIntensity={s.swirlEmissiveIntensity}
           />
         </mesh>
       </mesh>

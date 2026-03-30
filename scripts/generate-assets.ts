@@ -17,12 +17,15 @@
 import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import OpenAI from "openai";
 import sharp from "sharp";
 
 /* ── Config ─────────────────────────────────────────────── */
 
-const ROOT = path.resolve(import.meta.dirname, "..");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT = path.resolve(__dirname, "..");
 const OUT_BASE = path.join(ROOT, "public/assets/generated");
 const TEXTURE_DIR = path.join(OUT_BASE, "textures");
 const MODEL_DIR = path.join(OUT_BASE, "models");
